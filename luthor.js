@@ -106,7 +106,8 @@
 
     function readString(stream) {
       var escaped = false, str = "", char;
-      stream.next();
+      stream.next(); // advance past starting boundary
+
       while (!stream.eof()) {
         char = stream.next();
 
@@ -250,7 +251,6 @@
       }
 
       if (Matchers.isStringBoundary(char)) {
-        stream.next(); // advance past starting boundary
         return Tokens.string(Values.readString(stream));
       }
 

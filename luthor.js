@@ -24,14 +24,16 @@
    *
    * Limitations: input is a string, so can't handle large inputs. Need to implement using Stream.Readable.
    */
-  function CharStream(string) {
+  function CharStream(stringOrReadable) {
     var pos  = 0 /* position in the stream */,
-        len  = string.length,
         line = 1,
         col  = 0; /* position in the line */
 
+    var peek = ("string" === typeof stringOrReadable) ? stringPeek : readablePeek;
+
     function next() {
-      var char = string.charAt(pos++);
+      var char = peek();
+      ++pos;
 
       if ("\n" === char) {
         ++line;
@@ -43,8 +45,12 @@
       return char;
     }
 
-    function peek() {
-      return string.charAt(pos);
+    function stringPeek() {
+      return stringOrReadable.charAt(pos);
+    }
+
+    function readablePeek() {
+      return stringOrReadable.read(1);
     }
 
     function eof() {
@@ -288,28 +294,6 @@
 
     return { next: next, peek: peek, eof: eof, die: die };
   }
-
-
-  const fs = require("fs");
-
-  var content = fs.readFileSync("example.js", "utf-8");
-
-  console.log("=========== RAW CONTENT ===========");
-  console.log(content);
-  console.log("===================================");
-
-  var lex = new Luthor(new CharStream(content));
-
-  var result = [];
-  while (!lex.eof()) {
-    result.push(lex.next());
-  }
-
-  console.log("============== LEXED ==============");
-  console.log(JSON.stringify(result, null, 2));
-  console.log("===================================");
-
-  console.log("done");
 
   module.exports = {
     Luthor: Luthor,
